@@ -14,17 +14,26 @@ board_id = 'iVPLKIAa';
 def read ():
     # Получим данные всех колонок на доске:
     column_data = requests.get(base_url.format('boards') + '/' + board_id + '/lists', params=auth_params).json();
-
     # Теперь выведем название каждой колонки и всех заданий, которые к ней относятся:
     for column in column_data:
-        print(column['name'])
+        tasks_list=list();
+        print(column['name']+' ', end='')
         # Получим данные всех задач в колонке и перечислим все названия
         task_data = requests.get(base_url.format('lists') + '/' + column['id'] + '/cards', params=auth_params).json()
         if not task_data:
+            print('(The sum of tasks = 0)')
             print('\t' + 'Нет задач!')
             continue
         for task in task_data:
-            print('\t' + task['name'])
+            task = '\t' + task['name'];
+            tasks_list.append(task)
+        #print('(',len(tasks_list),')')
+        print('(The sum of tasks = {sum})'.format(sum=len(tasks_list)));
+        for task in tasks_list:
+            print(task);
+
+
+
 
 def create (name, column_name):
     # Получим данные всех колонок на доске
@@ -74,3 +83,5 @@ if __name__ == "__main__":
 #python3 trello_2_0.py
 #python3 trello_2_0.py move 'изучи python' 'Doing'
 #python3 trello_2_0.py create 'изучи python' 'To Do'
+#https://test.pypi.org/project/trello-client-basics-api-nightgust-2/0.0.1/
+#для установки через pip: python3 -m pip install --index-url https://test.pypi.org/project/trello-client-basics-api-nightgust-2/0.0.1/
