@@ -32,9 +32,6 @@ def read ():
         for task in tasks_list:
             print(task);
 
-
-
-
 def create (name, column_name):
     # Получим данные всех колонок на доске
     column_data = requests.get(base_url.format('boards') + '/' + board_id + '/lists', params=auth_params).json()
@@ -45,7 +42,8 @@ def create (name, column_name):
             # Создадим задачу с именем _name_ в найденной колонке
             requests.post(base_url.format('cards'), data={'name': name, 'idList': column['id'], **auth_params})
             break
-
+def create_list (column_name):
+    requests.post(base_url.format('lists'), data={'name': column_name, 'idBoard':'5dd8256605ab1e8bcff7fd4d', **auth_params});
 
 def move(name, column_name):
     # Получим данные всех колонок на доске
@@ -71,17 +69,23 @@ def move(name, column_name):
                          data={'value': column['id'], **auth_params})
             break
 
+
+
 if __name__ == "__main__":
+    #create_list('check');
     if len(sys.argv) <= 2:
         read()
     elif sys.argv[1] == 'create':
-        create(sys.argv[2], sys.argv[3])
+        create(sys.argv[2], sys.argv[3]);
     elif sys.argv[1] == 'move':
-        move(sys.argv[2], sys.argv[3])
+        move(sys.argv[2], sys.argv[3]);
+    elif sys.argv[1] == 'create_column':
+        create_list(sys.argv[2]);
 
 
-#python3 trello_2_0.py
-#python3 trello_2_0.py move 'изучи python' 'Doing'
-#python3 trello_2_0.py create 'изучи python' 'To Do'
-#https://test.pypi.org/project/trello-client-basics-api-nightgust-2/0.0.1/
+#python3 trello_2_0.py - вывести список задач
+#python3 trello_2_0.py move 'изучи python' 'Doing' - перенести задачу в другой список
+#python3 trello_2_0.py create 'изучи python' 'To Do' - создать задачу
+#python3 trello_2_0.py create_column 'supercheck' - создать новую колонку для задач
+#https://test.pypi.org/project/trello-client-basics-api-nightgust-2/0.0.1/ - адрес пакета для pip
 #для установки через pip: python3 -m pip install --index-url https://test.pypi.org/project/trello-client-basics-api-nightgust-2/0.0.1/
