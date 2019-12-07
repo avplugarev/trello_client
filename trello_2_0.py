@@ -11,65 +11,83 @@ auth_params = {
 base_url = 'https://api.trello.com/1/{}'
 board_id = 'iVPLKIAa';
 
-def read ():
+def read (): #метод вывода списка колонок, кол-во задач в них и названия задач
     # Получим данные всех колонок на доске:
     column_data = requests.get(base_url.format('boards') + '/' + board_id + '/lists', params=auth_params).json();
     # Теперь выведем название каждой колонки и всех заданий, которые к ней относятся:
     for column in column_data:
-        tasks_list=list();
         print(column['name']+' ', end='')
-        # Получим данные всех задач в колонке и перечислим все названия
         task_data = requests.get(base_url.format('lists') + '/' + column['id'] + '/cards', params=auth_params).json()
         if not task_data:
             print('(The sum of tasks = 0)')
             print('\t' + 'Нет задач!')
             continue
+        else:
+            print('(The sum of tasks = {sum})'.format(sum=len(task_data))); #считаем кол-во задач в колонке
         for task in task_data:
-            task = '\t' + task['name'];
-            tasks_list.append(task)
-        #print('(',len(tasks_list),')')
-        print('(The sum of tasks = {sum})'.format(sum=len(tasks_list)));
-        for task in tasks_list:
-            print(task);
+            print('\t' + task['name']);
 
-def create (name, column_name):
+def create (name, column_name): #метод создания задачи
     # Получим данные всех колонок на доске
     column_data = requests.get(base_url.format('boards') + '/' + board_id + '/lists', params=auth_params).json()
-
     # Переберём данные обо всех колонках, пока не найдём ту колонку, которая нам нужна
     for column in column_data:
         if column['name'] == column_name:
-            # Создадим задачу с именем _name_ в найденной колонке
-            requests.post(base_url.format('cards'), data={'name': name, 'idList': column['id'], **auth_params})
+            # Создадим задачу с именем name в найденной колонке
+            response = requests.post(base_url.format('cards'), data={'name': name, 'idList': column['id'], **auth_params})
+            if response.status_code == 200:
+                print('задача успешно создана')
+            else:
+                print('во время создания возникала ошибка - статус: ', response.status_code)
             break
-def create_list (column_name):
-    requests.post(base_url.format('lists'), data={'name': column_name, 'idBoard':'5dd8256605ab1e8bcff7fd4d', **auth_params});
+def create_list (column_name): #метод создания колонки в нашей доске
+    response = requests.post(base_url.format('lists'), data={'name': column_name, 'idBoard':'5dd8256605ab1e8bcff7fd4d', **auth_params});
+    if response.status_code == 200:
+        print('колонка успешно создана')
+    else:
+        print('во время создания колонки возникала ошибка - статус: ', response.status_code)
+
+def send_move_data (task_id, column_name, column_data):
+    # Теперь, когда у нас есть id задачи и она мы знаем, что у нее нет дублей
+    # Переберём данные обо всех колонках, пока не найдём ту, в которую мы будем перемещать задачу
+    for column in column_data:
+        if column['name'] == column_name:
+            # И выполним запрос к API для перемещения задачи в нужную колонку
+            response = requests.put(base_url.format('cards') + '/' + task_id + '/idList',
+                                    data={'value': column['id'], **auth_params})
+            if response.status_code == 200:
+                print('задача успешно перемещена')
+            else:
+                print('во время перемещения возникала ошибка - статус: ', response.status_code)
+            break
 
 def move(name, column_name):
     # Получим данные всех колонок на доске
     column_data = requests.get(base_url.format('boards') + '/' + board_id + '/lists', params=auth_params).json()
 
     # Среди всех колонок нужно найти задачу по имени и получить её id
-    task_id = None
+    task_id_lists = list(); #собираем список id задач с одинкавыми именами
+    duplicate_info = dict(); #заносим информацию по задачам с одинаковыми именами
     for column in column_data:
         column_tasks = requests.get(base_url.format('lists') + '/' + column['id'] + '/cards', params=auth_params).json()
         for task in column_tasks:
             if task['name'] == name:
-                task_id = task['id']
-                break
-        if task_id:
-            break
-
-            # Теперь, когда у нас есть id задачи, которую мы хотим переместить
-    # Переберём данные обо всех колонках, пока не найдём ту, в которую мы будем перемещать задачу
-    for column in column_data:
-        if column['name'] == column_name:
-            # И выполним запрос к API для перемещения задачи в нужную колонку
-            requests.put(base_url.format('cards') + '/' + task_id + '/idList',
-                         data={'value': column['id'], **auth_params})
-            break
-
-
+                task_id_lists.append(task['id']);
+                duplicate_info[task['id']] = task['name'], task['id'], column['name'];
+    #после прохода по всем столбцам обрабатываем результаты поиска дубликатов
+    if len(task_id_lists) == 0:
+        print('Выбранная вами задача отсутствует в этой доске')
+    elif len(duplicate_info.keys()) == 1:
+        send_move_data(task_id_lists[0], column_name, column_data);
+    else:
+        print('Среди задач обнаружены дубли','\n');
+        for values in duplicate_info.values():
+            values=list(values);
+            print('Имя дубликата: {name}, id дубликата: {id}, колонка дубликата: {column}'.format(name=values[0],
+                                                                                                  id=values[1],
+                                                                                               column=values[2]))
+        task_id = input('Введите id задачи, которую нужно переместить \n')
+        send_move_data(task_id, column_name, column_data);
 
 if __name__ == "__main__":
     #create_list('check');
