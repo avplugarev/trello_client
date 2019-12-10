@@ -3,13 +3,15 @@ import sys
 
 # Данные авторизации а API трелло
 auth_params = {
-    'key': 'd7b864e1040c8e3b473769742f42a6ff',
-    'token': '82a4b855a0ca518754561bd83c6267ddf01028d7786e08f760be944e5ab5639b',
+    'key': '', #введите свой API ключ
+    'token': '', #введите свой токен
 }
 
 # Адрес, на котором расположен API Trello, # Именно туда мы будем отправлять HTTP запросы.
-base_url = 'https://api.trello.com/1/{}'
-board_id = 'iVPLKIAa';
+base_url = 'https://api.trello.com/1/{}';
+board_id = ''; #введите короткий id достки из адреса
+board_id_long = ''; #введите длиныый id доски
+
 
 
 def read():  # метод вывода списка колонок, кол-во задач в них и названия задач
@@ -39,7 +41,7 @@ def create(name, column_name):
 # метод создания колонки в нашей доске
 def create_list(column_name):
     response = requests.post(base_url.format('lists'),
-                             data={'name': column_name, 'idBoard': '5dd8256605ab1e8bcff7fd4d', **auth_params});
+                             data={'name': column_name, 'idBoard': board_id_long, **auth_params});
     success_result(response.status_code, response.text)
 
 #вспомогательный метод поиска id нужной нам колонки - вынесен, чтобы не дублировать код
@@ -99,21 +101,27 @@ def move(name, column_name):
         response = requests.put(base_url.format('cards') + '/' + idCard + '/idList',
                                 data={'value': idColumn, **auth_params})
         success_result(response.status_code, response.text);
+def initial_check():
+    if auth_params['key'] =='' or auth_params['token'] == '' or board_id =='' or board_id_long == '':
+        print('Перед началом работы в файле скрипта нужно ввести API ключ, токен, оба id досок')
+        return False
 
 if __name__ == "__main__":
-    # create_list('check');
-    if len(sys.argv) <= 2:
-        read()
-    elif sys.argv[1] == 'create':
-        create(sys.argv[2], sys.argv[3]);
-    elif sys.argv[1] == 'move':
-        move(sys.argv[2], sys.argv[3]);
-    elif sys.argv[1] == 'create_column':
-        create_list(sys.argv[2]);
+    if initial_check() !=False:
+        if len(sys.argv) <= 2:
+            read()
+        elif sys.argv[1] == 'create':
+            create(sys.argv[2], sys.argv[3]);
+        elif sys.argv[1] == 'move':
+            move(sys.argv[2], sys.argv[3]);
+        elif sys.argv[1] == 'create_column':
+            create_list(sys.argv[2]);
 
+#команды для проверки
+#Перед началом тестирования заполните свои апи ключ и токен, а также короткий и длинный id для вашей программы
 # python3 trello_2_0.py - вывести список задач
-# python3 trello_2_0.py move 'изучи python' 'Doing' - перенести задачу в другой список
-# python3 trello_2_0.py create 'изучи python' 'To Do' - создать задачу
-# python3 trello_2_0.py create_column 'supercheck' - создать новую колонку для задач
+# python3 trello_2_0.py move 'изучи python4' 'Doing' - перенести задачу в другой список
+# python3 trello_2_0.py create 'изучи python25' 'To Do' - создать задачу
+# python3 trello_2_0.py create_column 'supercheck34' - создать новую колонку для задач
 # https://test.pypi.org/project/trello-client-basics-api-nightgust-2/0.0.1/ - адрес пакета для pip
 # для установки через pip: python3 -m pip install --index-url https://test.pypi.org/project/trello-client-basics-api-nightgust-2/0.0.1/

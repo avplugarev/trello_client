@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 setuptools.setup(
     name="trello_client-basics-api-nightgust_2",
-    version="0.0.2",
+    version="0.0.4",
     author="Александр Плугарев",
     author_email="nightgust@gmail.com",
     description="API клиент для работы с трелло - получать сипсок задач доски, создавать задачи, двигать задачи по этапам",
