@@ -28,7 +28,7 @@ def read():  # метод вывода списка колонок, кол-во 
         else:
             print('(The sum of tasks = {sum})'.format(sum=len(task_data)));  # считаем кол-во задач в колонке
         for task in task_data:
-            print('\t' + task['name']);
+            print('\t' + task['name']+' '+task['id']);
 
 # метод создания задачи
 def create(name, column_name):
