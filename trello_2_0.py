@@ -124,4 +124,4 @@ if __name__ == "__main__":
 # python3 trello_2_0.py create 'изучи python25' 'To Do' - создать задачу
 # python3 trello_2_0.py create_column 'supercheck34' - создать новую колонку для задач
 # https://test.pypi.org/project/trello-client-basics-api-nightgust-2/0.0.1/ - адрес пакета для pip
-# для установки через pip: python3 -m pip install --index-url https://test.pypi.org/project/trello-client-basics-api-nightgust-2/0.0.1/
+# для установки через pip: python3 -m pip install --index-url https://test.pypi.org/project/trello-client-basics-api-nightgust-2/0.0.4/
